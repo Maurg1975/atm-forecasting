@@ -49,9 +49,11 @@ DHT dht(DHTPIN, DHTTYPE);
 
 // Initialize the BMP180 sensor for pressure measurement (I2C protocol)
 Adafruit_BMP085 bmp; 
+bool disablePressureMeter = false;
 
 // Initialize the BH1750 sensor for light intensity measurement (I2C protocol)
 BH1750 lightMeter;
+bool disableLightMeter = false;
 
 // The setup function runs once when you press reset or power the board
 void setup() {
@@ -64,37 +66,53 @@ void setup() {
   // Start the BMP180 sensor and check if it's detected correctly
   if (!bmp.begin()) {
     Serial.println(F("Could not find a valid BMP180 sensor, check wiring!"));
-    // If the sensor is not found, stop the program here
-    while (1);
+    disablePressureMeter = true;
   }
 
   // Start the BH1750 sensor and check if it's detected correctly
   if (!lightMeter.begin()) {
     Serial.println(F("Could not find a valid BH1750 sensor, check wiring!"));
-    // If the sensor is not found, stop the program here
-    while (1);
+	  disableLightMeter = true;
   }
   
   // Optional: Wait for MQ-2 and MQ-135 sensor warm-up (e.g., 2 minutes)
-  Serial.println(F("Warming up MQ-2 and MQ-135 sensors..."));
-  delay(120000); // 2 minutes warm-up
-  Serial.println(F("MQ-2 and MQ-135 sensors are ready."));
+//  Serial.println(F("Warming up MQ-2 and MQ-135 sensors..."));
+//  delay(120000); // 2 minutes warm-up
+//  Serial.println(F("MQ-2 and MQ-135 sensors are ready."));
 }
 
 // The loop function runs over and over again forever
 void loop() {
   // Read temperature from the DHT sensor
   float temperature = dht.readTemperature();
+  if (isnan(temperature)) {
+    temperature = 0;
+  }
 
   // Read humidity from the DHT sensor
   float humidity = dht.readHumidity();
+  if (isnan(humidity)) {
+    humidity = 0;
+  }
 
   // Read pressure from the BMP180 sensor and convert it to hPa
-  float pressure = bmp.readPressure() / 100.0F;
+  float pressure = 0;
+  if (!disablePressureMeter) {
+    pressure = bmp.readPressure();
+    if (!isnan(pressure) && (pressure > 0)) {
+	    pressure = pressure / 100.0F;
+    }
+  }
 
   // Read light intensity from the BH1750 sensor
-  float lightLevel = lightMeter.readLightLevel();
-
+  float lightLevel = 0;
+  if (!disableLightMeter) {
+	  lightLevel = lightMeter.readLightLevel();
+	  if (lightLevel < 0) {
+	    lightLevel = 0;
+	  }
+  }
+  
   // Read gas concentration from the MQ-2 sensor
   int mq2Value = analogRead(MQ2PIN);
   float mq2Voltage = mq2Value * (5.0 / 1023.0); // Convert to voltage
@@ -111,13 +129,6 @@ void loop() {
   int windDirectionValue = analogRead(WINDDIRECTIONPIN);
   float windDirection = (windDirectionValue * (5.0 / 1023.0)) * (360.0 / 5.0); // Convert to degrees
 
-  // Check if the temperature or humidity readings are valid
-  if (isnan(temperature) || isnan(humidity)) {
-    Serial.println(F("Failed to read from DHT sensor!"));
-    // If readings are invalid, return to the start of the loop
-    return;
-  }
-
   // Print the temperature, humidity, pressure, light intensity, gas concentration, wind speed, and wind direction values to the serial monitor
   Serial.print("Temperature: ");
   Serial.print(temperature);
@@ -127,15 +138,14 @@ void loop() {
   Serial.print(pressure);
   Serial.print(", Light Intensity: ");
   Serial.print(lightLevel);
-  Serial.print(" lux, MQ-2 Voltage: ");
+  Serial.print(", MQ-2 Voltage: ");
   Serial.print(mq2Voltage);
   Serial.print(", MQ-135 Voltage: ");
   Serial.print(mq135Voltage);
   Serial.print(", Wind Speed: ");
   Serial.print(windSpeed);
-  Serial.print(" m/s, Wind Direction: ");
-  Serial.print(windDirection);
-  Serial.println(" degrees");
+  Serial.print(", Wind Direction: ");
+  Serial.println(windDirection);
 
   // Wait for 2 seconds before taking another reading
   delay(2000);

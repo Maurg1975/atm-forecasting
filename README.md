@@ -6,7 +6,7 @@ This project is dedicated to the loving memory of Michela Dattolo, Camil Demetre
 
 ## Overview
 
-This project is designed for real-time collection, transmission, and forecasting of atmospheric parameters (temperature, humidity, and pressure) using a combination of Arduino, Python, and Long Short-Term Memory (LSTM) neural networks.
+This project is designed for real-time collection, transmission, and forecasting of atmospheric parameters (temperature, humidity, pressure, gas concentration, wind speed, and wind direction) using a combination of Arduino, Python, and Long Short-Term Memory (LSTM) neural networks.
 The project is composed of three main components:
 
 1. **Arduino Program**: Collects environmental data from sensors.
@@ -15,7 +15,7 @@ The project is composed of three main components:
 
 ## Project Structure
 
-- **`read_env_values.ino`**: The Arduino program that reads temperature, humidity, and pressure data from the sensors.
+- **`read_env_values.ino`**: The Arduino program that reads temperature, humidity, pressure and other data from the sensors.
 - **`send_env_values.py`**: A Python script that runs on a local computer, reading data from the Arduino and sending it to a remote server through ngrok.
 - **`recv_env_values.py`**: A Python script that runs on a server or a cloud platform (e.g., Google Colab), receiving data, training an LSTM model, and forecasting future atmospheric values.
 
@@ -27,6 +27,10 @@ The project is composed of three main components:
 - **Sensors**:
   - **Temperature and Humidity**: DHT11 or DHT22
   - **Pressure**: BMP180 or BMP280
+  - **Light intensity**: BH1750
+  - **Gas concentration**: MQ-2 and MQ-135
+  - **Wind speed**: Anemometer
+  - **Wind direction**: Wind Direction Sensor
 - **Computer**: To run the data transmission and reception scripts.
 
 ### Software
@@ -51,7 +55,7 @@ The project is composed of three main components:
 
 ### 1. Arduino Setup
 
-1. **Connect the Sensors**: Wire your DHT and BMP sensors to the Arduino (see `schematics` folder for details).
+1. **Connect the Sensors**: Wire your sensors to the Arduino (see `schematics` folder for details).
 2. **Upload the Sketch**:
    - Open the `read_env_values.ino` file in the Arduino IDE.
    - Select the appropriate board and port from the Tools menu.
@@ -79,7 +83,21 @@ The project is composed of three main components:
 
 ### 3. Running the Scripts
 
-a. **Run `send_env_values.py` on the Local Computer**
+a. **Run `recv_env_values.py` on the Server or Colab**
+   1. **Expose the Server**:
+      - if you run `recv_env_values.py` on Google Colab:
+        * Uncomment line `!pip install pyngrok` in `recv_env_values.py`
+      - if you run `recv_env_values.py` on Server:
+	    * Start ngrok to expose the server to the internet.
+	    * Copy the public URL provided by ngrok.
+   2. **Run the Script**:
+      - if you run `recv_env_values.py` on the Server:
+        ```bash
+        python ./src/recv_env_values.py
+        ```
+      - The script will start listening for incoming data, update the LSTM model, and make predictions.
+
+b. **Run `send_env_values.py` on the Local Computer**
    1. **Connect Arduino**: Ensure your Arduino is connected to the computer via USB.
    2. **Edit the Script**:
       * Update `SERIAL_PORT` in `send_env_values.py` with your Arduino's correct serial port.
@@ -88,18 +106,6 @@ a. **Run `send_env_values.py` on the Local Computer**
       ```bash
       python ./src/send_env_values.py
       ```
-b. **Run `recv_env_values.py` on the Server or Colab**
-   1. **Expose the Server**:
-      * Start ngrok to expose the server to the internet.
-      * Copy the public URL provided by ngrok.
-   2. **Run the Script**:
-      - if you run `recv_env_values.py` on the Server:
-        ```bash
-        python ./src/recv_env_values.py
-        ```
-      - if you run `recv_env_values.py` on Google Colab:
-        * Uncomment line `!pip install pyngrok` in `recv_env_values.py`
-      - The script will start listening for incoming data, update the LSTM model, and make predictions.
 
 ## Usage
 

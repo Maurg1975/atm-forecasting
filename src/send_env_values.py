@@ -6,7 +6,7 @@ The program establishes a serial connection with an Arduino device to collect at
 and then sends this data to a remote server via a TCP/IP socket connection. This setup is intended
 for scenarios where atmospheric data is gathered remotely and processed on a server, potentially 
 feeding into machine learning models for atmospheric forecasting.
-Developed with assistance from AI-based chatbot tools such as Claude by Anthropic, 
+Developed with assistance from AI-based chatbot tools such as Claude by Anthropic and ChatGPT by OpenAI, 
 to streamline coding and implementation processes.
 
 Copyright (C) 2024 Maurg1975
@@ -22,15 +22,24 @@ import time
 from datetime import datetime
 import serial
 
-###### REPLACE WITH YOUR ARDUINO AND NGROK DATA ######
+###### DEFAULT CONFIGURATION ######
 
-# Configure the serial connection to Arduino
-SERIAL_PORT = 'COM3'  # Replace with the correct serial port
-BAUD_RATE = 9600
+DEFAULT_SERIAL_PORT = 'COM3'
+DEFAULT_BAUD_RATE = 9600
+DEFAULT_SERVER_ADDRESS = "4.tcp.ngrok.io"
+DEFAULT_SERVER_PORT = 10512
 
-# Server address and port
-SERVER_ADDRESS = "0.tcp.ngrok.io"  # Replace with your server's address
-SERVER_PORT = 13212  # Replace with your server's port
+###################################
+
+# Prompt the user for the serial port and baud rate
+serial_port = input(f"Enter the serial port [default: {DEFAULT_SERIAL_PORT}]: ") or DEFAULT_SERIAL_PORT
+baud_rate = input(f"Enter the baud rate [default: {DEFAULT_BAUD_RATE}]: ") or DEFAULT_BAUD_RATE
+baud_rate = int(baud_rate)
+
+# Prompt the user for the server address and port
+server_address = input(f"Enter the server address [default: {DEFAULT_SERVER_ADDRESS}]: ") or DEFAULT_SERVER_ADDRESS
+server_port = input(f"Enter the server port [default: {DEFAULT_SERVER_PORT}]: ") or DEFAULT_SERVER_PORT
+server_port = int(server_port)
 
 ######################################################
 
@@ -38,12 +47,16 @@ SERVER_PORT = 13212  # Replace with your server's port
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
 # Initialize the serial connection to Arduino
-arduino = serial.Serial(SERIAL_PORT, BAUD_RATE)
+try:
+    arduino = serial.Serial(serial_port, baud_rate)
+except serial.SerialException as e:
+    print(f"Failed to connect to Arduino on {serial_port} at {baud_rate} baud: {e}")
+    exit(1)
 
 try:
     # Connect to the server
-    client_socket.connect((SERVER_ADDRESS, SERVER_PORT))
-    print(f"Connected to server {SERVER_ADDRESS}:{SERVER_PORT}")
+    client_socket.connect((server_address, server_port))
+    print(f"Connected to server {server_address}:{server_port}")
 
     while True:
         if arduino.in_waiting > 0:
