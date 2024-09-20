@@ -39,10 +39,10 @@
 #define DHTTYPE DHT11   
 
 // Define the analog pins connected to the MQ-2, MQ-135, Anemometer, and Wind Direction sensors
-#define MQ2PIN A0
-#define MQ135PIN A1
-#define ANEMOMETERPIN A2
-#define WINDDIRECTIONPIN A3
+#define ANEMOMETERPIN A0
+#define WINDDIRECTIONPIN A1
+#define MQ2PIN A2
+#define MQ135PIN A3
 
 // Initialize the DHT sensor with the specified pin and type
 DHT dht(DHTPIN, DHTTYPE);

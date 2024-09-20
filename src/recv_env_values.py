@@ -26,6 +26,7 @@ import tensorflow as tf
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import LSTM, Dense
 import matplotlib.pyplot as plt
+from IPython.display import clear_output
 
 ############ REPLACE WITH YOUR NGROK DATA ############
 
@@ -100,22 +101,27 @@ def predict_weather_lstm(model, recent_data):
     recent_data_df = pd.DataFrame(recent_data, columns=selected_sensors[1:])
     recent_data_scaled = scaler.transform(recent_data_df)
     recent_data_scaled = np.array([recent_data_scaled])
-    prediction_scaled = model.predict(recent_data_scaled)
+    prediction_scaled = model.predict(recent_data_scaled, verbose=0)
     prediction = scaler.inverse_transform(prediction_scaled)
     return prediction[0]
 
 # Function to plot real and predicted data
 def plot_data(data, predictions):
-    plt.figure(figsize=(14, len(selected_sensors) * 2))
+    clear_output(wait=True)  # This will clear the previous output before plotting new graphs
+    
+    num_sensors = len(selected_sensors) - 1  # Exclude timestamp
+    rows = (num_sensors + 1) // 2  # Calculate the number of rows needed (2 plots per row)
+    
+    plt.figure(figsize=(14, rows * 2))  # Adjust figure size based on number of rows
 
     for i, sensor in enumerate(selected_sensors[1:]):  # Skip timestamp
-        plt.subplot(len(selected_sensors) - 1, 1, i + 1)
+        plt.subplot(rows, 2, i + 1)  # Create subplot grid with 2 columns
         plt.plot(data['timestamp'], data[sensor], label=f'Real {sensor.capitalize()}', color='blue')
         plt.plot(data['timestamp'][seq_length:], [p[i] for p in predictions], label=f'Predicted {sensor.capitalize()}', color='red')
         plt.title(sensor.capitalize())
         plt.legend()
 
-    plt.tight_layout()
+    plt.tight_layout()  # Adjust layout to prevent overlap
     plt.show()
 
 # Function to handle client connections
@@ -179,9 +185,9 @@ def handle_client(client_socket, client_address):
 
                     predictions.append(predicted_weather)
 
-                    print(f"Predicted {selected_sensors[1]}: {predicted_weather[0]}")
-                    for i, sensor in enumerate(selected_sensors[2:]):
-                        print(f"Predicted {sensor.capitalize()}: {predicted_weather[i+1]}")
+#                    print(f"Predicted {selected_sensors[1]}: {predicted_weather[0]}")
+#                    for i, sensor in enumerate(selected_sensors[2:]):
+#                        print(f"Predicted {sensor.capitalize()}: {predicted_weather[i+1]}")
 
                     # Visualize the data
                     plot_data(data, predictions)
