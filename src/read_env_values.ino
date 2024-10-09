@@ -12,7 +12,6 @@
  * Licensed under the GNU General Public License v3.0 (GPLv3)
  * 
  * This program is compatible with the following Arduino models:
- * - Arduino Uno
  * - Arduino Mega
  * - Arduino Nano
  * 
@@ -24,6 +23,7 @@
  * - Anemometer: Measures wind speed.
  * - Wind Direction Sensor: Measures wind direction.
  * - BH1750: Measures light intensity in lux.
+ * - Rain sensor
  */
 
 #include <DHT.h>
@@ -43,6 +43,7 @@
 #define WINDDIRECTIONPIN A1
 #define MQ2PIN A2
 #define MQ135PIN A3
+#define RAINSENSORANALOG A6
 
 // Initialize the DHT sensor with the specified pin and type
 DHT dht(DHTPIN, DHTTYPE);
@@ -74,7 +75,7 @@ void setup() {
     Serial.println(F("Could not find a valid BH1750 sensor, check wiring!"));
 	  disableLightMeter = true;
   }
-  
+
   // Optional: Wait for MQ-2 and MQ-135 sensor warm-up (e.g., 2 minutes)
 //  Serial.println(F("Warming up MQ-2 and MQ-135 sensors..."));
 //  delay(120000); // 2 minutes warm-up
@@ -129,6 +130,10 @@ void loop() {
   int windDirectionValue = analogRead(WINDDIRECTIONPIN);
   float windDirection = (windDirectionValue * (5.0 / 1023.0)) * (360.0 / 5.0); // Convert to degrees
 
+  // Read value from the rain sensor
+  int rainSensorValue = analogRead(RAINSENSORANALOG);
+  float rainIntensity = (1023.0 - rainSensorValue) * (5.0 / 1023.0);
+
   // Print the temperature, humidity, pressure, light intensity, gas concentration, wind speed, and wind direction values to the serial monitor
   Serial.print("Temperature: ");
   Serial.print(temperature);
@@ -145,7 +150,9 @@ void loop() {
   Serial.print(", Wind Speed: ");
   Serial.print(windSpeed);
   Serial.print(", Wind Direction: ");
-  Serial.println(windDirection);
+  Serial.print(windDirection);
+  Serial.print(", Rain Intensity: ");
+  Serial.println(rainIntensity);
 
   // Wait for 2 seconds before taking another reading
   delay(2000);

@@ -5,3 +5,5 @@ scikit-learn
 tensorflow
 matplotlib
 pyserial
+IPython
+datetime
