@@ -13,6 +13,9 @@ The project is composed of three main components:
 2. **Data Transmission Script**: Sends the collected data to a remote server via ngrok.
 3. **Data Reception and Forecasting Script**: Receives the data, trains an LSTM model, and forecasts future values.
 
+More information:
+https://www.youtube.com/watch?v=-h2XQh71tjQ
+
 ## Project Structure
 
 - **`read_env_values.ino`**: The Arduino program that reads temperature, humidity, pressure and other data from the sensors.
