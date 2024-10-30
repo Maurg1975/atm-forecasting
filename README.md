@@ -6,6 +6,8 @@ This project is dedicated to the loving memory of Michela Dattolo, Camil Demetre
 
 ## Overview
 
+![alt text](https://github.com/Maurg1975/atm-forecasting/blob/main/img/poster.png)
+
 This project is designed for real-time collection, transmission, and forecasting of atmospheric parameters (temperature, humidity, pressure, gas concentration, wind speed, wind direction and rain intensity) using a combination of Arduino, Python, and Long Short-Term Memory (LSTM) neural networks.
 The project is composed of three main components:
 
